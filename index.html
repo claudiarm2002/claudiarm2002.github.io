@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Editor GPX</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#fc4c02">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Editor GPX">
+
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mu:#6a7380;--ac:#fc4c02;--bd:#e2e5ea;--map:#eef1f4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111418;--card:#1b2026;--tx:#eceff3;--mu:#97a1ae;--bd:#2c333b;--map:#161b20}}
+:root[data-theme="dark"]{--bg:#111418;--card:#1b2026;--tx:#eceff3;--mu:#97a1ae;--bd:#2c333b;--map:#161b20}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif}
+main{max-width:680px;margin:0 auto;padding:14px}
+h1{font-size:20px;margin:4px 0 12px}
+h2{font-size:16px;margin:0 0 6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:12px}
+button,select,.btn{font:inherit;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:9px 13px;cursor:pointer}
+.pri{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
+input[type=file]{display:none}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}
+.mu{color:var(--mu);font-size:13px}
+canvas{width:100%;display:block;background:var(--map);border-radius:10px;touch-action:none}
+#cv{height:340px}#ch{height:150px;touch-action:auto}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.st{background:var(--bg);border-radius:10px;padding:8px 10px}.st b{display:block;font-size:18px}
+.frag,.cd{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--bd)}
+.n{flex:1;min-width:0}
+input[type=range]{width:100%;accent-color:#1e88e5}
+input[type=text]{width:100%;font:inherit;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)}
+.tab.on{background:var(--tx);color:var(--bg)}
+.sm{padding:5px 10px;font-size:13px}
+</style>
+</head>
+<body>
+<main>
+<h1>Editor GPX per a running</h1>
+
+<div class="card">
+  <h2>1. Carrega les activitats</h2>
+  <label class="btn pri" for="f">Carrega fitxers GPX</label>
+  <input id="f" type="file" multiple>
+  <div id="list"></div>
+  <p class="mu" id="empty">Si el rellotge s’ha aturat, carrega els dos fragments: s’ordenen i s’uneixen sols.</p>
+  <label class="mu">Forat entre fragments
+    <select id="mode" style="width:100%;margin-top:4px"><option value="line">Unir amb línia recta</option><option value="interp">Omplir amb punts interpolats (cada 5 s)</option><option value="seg">Deixar-ho separat</option></select>
+  </label>
+</div>
+
+<div class="card">
+  <h2>2. Mapa</h2>
+  <canvas id="cv"></canvas>
+  <div class="row">
+    <button class="sm" id="zi">＋</button><button class="sm" id="zo">－</button><button class="sm" id="fit">Ajusta</button>
+    <label class="mu"><input type="checkbox" id="bg" checked> Mapa de fons</label>
+  </div>
+  <div class="mu">Arrossega per moure, pessiga o fes servir ＋/－ per fer zoom.</div>
+</div>
+
+<div class="card">
+  <h2>3. Edita un tram</h2>
+  <p class="mu">Mou els dos lliscadors: el tram escollit es veu en blau al mapa i al gràfic.</p>
+  <input type="range" id="r0" min="0" max="0" value="0">
+  <input type="range" id="r1" min="0" max="0" value="0">
+  <div class="mu" id="sl"></div>
+  <div class="row">
+    <button id="trim">Retalla: queda només el tram</button>
+    <button id="cut">Esborra el tram</button>
+    <button id="line">Fes-lo una línia recta</button>
+    <button id="und">Desfés</button>
+  </div>
+  <div class="mu">Retalla serveix per treure l’inici o el final. Les dades de pulsacions es conserven.</div>
+</div>
+
+<div class="card">
+  <h2>Gràfics</h2>
+  <div class="row"><button class="tab sm on" id="t-ele">Altitud</button><button class="tab sm" id="t-pace">Ritme</button><button class="tab sm" id="t-hr">Pulsacions</button></div>
+  <canvas id="ch"></canvas>
+  <div class="grid" id="stats" style="margin-top:8px"></div>
+</div>
+
+<div class="card">
+  <h2>4. Revisió amb IA</h2>
+  <p class="mu">Claude busca punxes i salts impossibles i només te’ls suggereix: no canvia res fins que tu premis «Aplica».</p>
+  <button class="pri" id="det">Busca errors</button>
+  <div id="cl"></div>
+</div>
+
+<div class="card">
+  <h2>5. Desa</h2>
+  <label class="mu">Nom de l’activitat<input type="text" id="nm" value="Activitat"></label>
+  <div class="row"><button class="pri" id="exp">Desa el GPX</button><button id="cp">Copia el GPX</button></div>
+  <div class="mu" id="msg"></div>
+  <p class="mu">Es desa com a <i>.gpx</i>. A l’iPhone tria «Desa a Fitxers». Per pujar-lo a Strava, obre strava.com/upload/select des del Safari.</p>
+</div>
+</main>
+
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var frags=[],NS={},hist=[],cands=[],sel=[0,0],FL=[],V={ux:.5,uy:.5,z:2},ser='ele',showMap=true,TL={};
+var SUG={remove:'Eliminar els punts',split:'Tallar la línia',keep:'No tocar (sembla real)'};
+function say(t){$('msg').textContent=t}
+function hav(a,b){var R=6371000,r=Math.PI/180,x=(b.lat-a.lat)*r,y=(b.lon-a.lon)*r,h=Math.sin(x/2)*Math.sin(x/2)+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(y/2)*Math.sin(y/2);return 2*R*Math.asin(Math.sqrt(h))}
+function fmtT(s){s=Math.round(s);var h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')}
+function fmtD(m){return (m/1000).toFixed(2)+' km'}
+function fmtP(s){return Math.floor(s/60)+':'+String(Math.round(s%60)).padStart(2,'0')}
+function med(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y});return s[Math.floor(s.length/2)]}
+function U(p){var s=Math.sin(p.lat*Math.PI/180);return p._u=[(p.lon+180)/360,.5-Math.log((1+s)/(1-s))/(4*Math.PI)]}
+
+function parseGpx(txt,name){
+ var d=new DOMParser().parseFromString(txt,'application/xml');
+ if(d.getElementsByTagName('parsererror').length)throw new Error('XML no vàlid');
+ Array.prototype.forEach.call(d.documentElement.attributes,function(a){if(/^xmlns:|^xsi:/.test(a.name))NS[a.name]=a.value});
+ var els=d.getElementsByTagName('trkpt'),pts=[],ser=new XMLSerializer();
+ for(var i=0;i<els.length;i++){
+  var e=els[i],te=e.getElementsByTagName('time')[0],ee=e.getElementsByTagName('ele')[0],xe=e.getElementsByTagName('extensions')[0];
+  var lat=parseFloat(e.getAttribute('lat')),lon=parseFloat(e.getAttribute('lon'));
+  if(isNaN(lat)||isNaN(lon))continue;
+  var ext=xe?ser.serializeToString(xe):'',m=ext.match(/<(?:\w+:)?hr>(\d+)</);
+  pts.push({lat:lat,lon:lon,ele:ee?parseFloat(ee.textContent):null,t:te?Date.parse(te.textContent):null,ext:ext,hr:m?+m[1]:null});
+ }
+ if(!pts.length)throw new Error('Cap punt de track a '+name);
+ return {name:name,pts:pts,on:true};
+}
+
+function ordered(){return frags.filter(function(f){return f.on}).sort(function(x,y){var a=x.pts[0].t,b=y.pts[0].t;return(a==null||b==null)?0:a-b})}
+function interp(a,b){
+ var o=[];if(a.t==null||b.t==null)return o;
+ var g=(b.t-a.t)/1000;if(g<=10)return o;
+ for(var i=1;i<Math.min(Math.floor(g/5),3000);i++){var k=i*5000/(b.t-a.t);
+  o.push({lat:a.lat+(b.lat-a.lat)*k,lon:a.lon+(b.lon-a.lon)*k,ele:(a.ele!=null&&b.ele!=null)?a.ele+(b.ele-a.ele)*k:null,t:a.t+i*5000,ext:'',hr:null})}
+ return o;
+}
+function build(){
+ var fs=ordered(),mode=$('mode').value,segs=[],gaps=[];
+ fs.forEach(function(f,i){
+  if(!i){segs.push(f.pts.slice());return}
+  var prev=fs[i-1].pts[fs[i-1].pts.length-1],first=f.pts[0];
+  gaps.push({sec:(prev.t!=null&&first.t!=null)?(first.t-prev.t)/1000:null,m:hav(prev,first)});
+  if(mode==='seg')segs.push(f.pts.slice());
+  else{var c=segs[segs.length-1];if(mode==='interp')c.push.apply(c,interp(prev,first));c.push.apply(c,f.pts)}
+ });
+ var out=[];segs.forEach(function(s){var c=[];s.forEach(function(p){if(p.brk&&c.length){out.push(c);c=[]}c.push(p)});if(c.length)out.push(c)});
+ return {segs:out,gaps:gaps};
+}
+
+/* ---- historial i operacions ---- */
+function snap(){hist.push(frags.map(function(f){return {f:f,on:f.on,pts:f.pts.map(function(p){return Object.assign({},p)})}}));if(hist.length>20)hist.shift()}
+function setPts(pts,name){pts[0]&&(pts[0].brk=false);frags=[{name:name||$('nm').value||'Activitat',pts:pts,on:true}];cands=[];render(true)}
+$('trim').onclick=function(){if(!FL.length)return;snap();setPts(FL.slice(sel[0],sel[1]+1))};
+$('cut').onclick=function(){if(!FL.length||sel[0]>sel[1])return;snap();var a=FL.slice(0,sel[0]),b=FL.slice(sel[1]+1);if(b.length)b[0].brk=a.length>0;var p=a.concat(b);if(!p.length){say('No es pot esborrar tot.');hist.pop();return}setPts(p)};
+$('line').onclick=function(){var a=sel[0],b=sel[1];if(b-a<2){say('Escull un tram més llarg.');return}snap();FL[b].brk=false;setPts(FL.slice(0,a+1).concat(interp(FL[a],FL[b]),FL.slice(b)))};
+$('und').onclick=function(){var h=hist.pop();if(!h){say('Res a desfer.');return}frags=h.map(function(x){x.f.pts=x.pts;x.f.on=x.on;return x.f});cands=[];render(true);say('Desfet.')};
+
+/* ---- estadístiques i dibuix ---- */
+function stats(B){
+ var dist=0,asc=0,mov=0,t0=null,t1=null,hs=0,hn=0;
+ B.segs.forEach(function(s){s.forEach(function(p,i){
+  if(p.t!=null){if(t0==null||p.t<t0)t0=p.t;if(t1==null||p.t>t1)t1=p.t}
+  if(p.hr!=null){hs+=p.hr;hn++}
+  if(!i)return;var q=s[i-1],d=hav(q,p);dist+=d;
+  if(p.ele!=null&&q.ele!=null&&p.ele>q.ele)asc+=p.ele-q.ele;
+  if(p.t!=null&&q.t!=null){var dt=(p.t-q.t)/1000;if(dt>0&&dt<=30&&d/dt>.3)mov+=dt}
+ })});
+ return {dist:dist,asc:asc,mov:mov,el:(t0!=null&&t1!=null)?(t1-t0)/1000:null,hr:hn?hs/hn:null};
+}
+function render(reset){
+ var list=$('list');list.innerHTML='';
+ frags.forEach(function(f,i){
+  var r=document.createElement('div');r.className='frag';
+  var cb=document.createElement('input');cb.type='checkbox';cb.checked=f.on;cb.onchange=function(){f.on=cb.checked;render(true)};
+  var n=document.createElement('div');n.className='n';
+  var b=document.createElement('b');b.textContent=f.name;b.style.cssText='display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+  var m=document.createElement('span');m.className='mu';var s=stats({segs:[f.pts]});
+  m.textContent=fmtD(s.dist)+' · '+f.pts.length+' punts'+(f.pts[0].t!=null?' · '+new Date(f.pts[0].t).toLocaleString('ca',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'');
+  n.appendChild(b);n.appendChild(m);
+  var x=document.createElement('button');x.className='sm';x.textContent='✕';x.onclick=function(){snap();frags.splice(i,1);cands=[];render(true)};
+  r.appendChild(cb);r.appendChild(n);r.appendChild(x);list.appendChild(r);
+ });
+ $('empty').style.display=frags.length?'none':'block';
+ var B=build(),d=0;FL=[];
+ B.segs.forEach(function(s){s.forEach(function(p,j){if(j)d+=hav(s[j-1],p);p._d=d;p._s=j===0;p._u||U(p);FL.push(p)})});
+ FL.forEach(function(p,i){var a=FL[Math.max(0,i-4)],b=FL[Math.min(FL.length-1,i+4)];
+  p._pace=null;if(a.t!=null&&b.t!=null&&b._d>a._d+5){var v=((b.t-a.t)/1000)/((b._d-a._d)/1000);if(v>150&&v<1000)p._pace=v}});
+ var S=stats(B),items=[['Distància',fmtD(S.dist)],['Temps total',S.el!=null?fmtT(S.el):'—'],['Temps en moviment',S.mov?fmtT(S.mov):'—'],['Ritme mitjà',S.mov?fmtP(S.mov/(S.dist/1000))+' /km':'—'],['Desnivell +',Math.round(S.asc)+' m']];
+ if(S.hr)items.push(['Pulsacions mitjanes',Math.round(S.hr)+' bpm']);
+ B.gaps.forEach(function(g,i){items.push(['Forat '+(i+1),(g.sec!=null?fmtT(g.sec)+' · ':'')+Math.round(g.m)+' m'])});
+ var st=$('stats');st.innerHTML='';
+ items.forEach(function(it){var e=document.createElement('div');e.className='st';var l=document.createElement('span');l.className='mu';l.textContent=it[0];var v=document.createElement('b');v.textContent=it[1];e.appendChild(l);e.appendChild(v);st.appendChild(e)});
+ $('t-hr').style.display=FL.some(function(p){return p.hr!=null})?'':'none';
+ if(reset)sel=[0,Math.max(0,FL.length-1)];
+ sel[1]=Math.min(sel[1],Math.max(0,FL.length-1));sel[0]=Math.min(sel[0],sel[1]);
+ $('r0').max=$('r1').max=Math.max(0,FL.length-1);$('r0').value=sel[0];$('r1').value=sel[1];
+ if(reset)fit();
+ showC();drawAll();
+}
+function drawAll(){
+ if(FL.length){$('sl').textContent='Tram: '+fmtD(FL[sel[0]]._d)+' → '+fmtD(FL[sel[1]]._d)+' · '+(sel[1]-sel[0]+1)+' punts'}else $('sl').textContent='';
+ drawMap();drawCh();
+}
+function fit(){
+ if(!FL.length)return;var W=$('cv').clientWidth,H=$('cv').clientHeight,a=[1,1,0,0];
+ FL.forEach(function(p){var u=p._u;a[0]=Math.min(a[0],u[0]);a[1]=Math.min(a[1],u[1]);a[2]=Math.max(a[2],u[0]);a[3]=Math.max(a[3],u[1])});
+ var w=Math.max(a[2]-a[0],1e-7),h=Math.max(a[3]-a[1],1e-7);
+ V.ux=(a[0]+a[2])/2;V.uy=(a[1]+a[3])/2;V.z=Math.max(1,Math.min(18,Math.log2(Math.min((W-40)/(256*w),(H-40)/(256*h)))));
+}
+function tiles(c,W,H){
+ var S=256*Math.pow(2,V.z),zi=Math.max(1,Math.min(18,Math.round(V.z))),n=Math.pow(2,zi),ts=S/n;
+ var x0=Math.floor((V.ux-W/2/S)*n),x1=Math.floor((V.ux+W/2/S)*n),y0=Math.max(0,Math.floor((V.uy-H/2/S)*n)),y1=Math.min(n-1,Math.floor((V.uy+H/2/S)*n));
+ if((x1-x0+1)*(y1-y0+1)>60)return;
+ for(var x=x0;x<=x1;x++)for(var y=y0;y<=y1;y++){
+  var k=zi+'/'+(((x%n)+n)%n)+'/'+y,im=TL[k];
+  if(!im){im=TL[k]=new Image();im.onload=function(){this.ok=1;drawMap()};im.src='https://tile.openstreetmap.org/'+k+'.png'}
+  if(im.ok)c.drawImage(im,W/2+(x/n-V.ux)*S,H/2+(y/n-V.uy)*S,ts+.5,ts+.5);
+ }
+ c.fillStyle='rgba(255,255,255,.7)';c.fillRect(W-120,H-16,120,16);c.fillStyle='#333';c.font='10px sans-serif';c.textAlign='right';c.fillText('© OpenStreetMap',W-4,H-4);
+}
+function drawMap(){
+ var cv=$('cv'),dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;
+ var c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
+ if(!FL.length){c.fillStyle='#8a93a0';c.font='14px sans-serif';c.textAlign='center';c.fillText('Cap track carregat',W/2,H/2);return}
+ var S=256*Math.pow(2,V.z);if(showMap)tiles(c,W,H);
+ function X(p){return W/2+(p._u[0]-V.ux)*S}function Y(p){return H/2+(p._u[1]-V.uy)*S}
+ c.lineJoin=c.lineCap='round';
+ function path(a,b){c.beginPath();for(var i=a;i<=b;i++){var p=FL[i];(i===a||p._s)?c.moveTo(X(p),Y(p)):c.lineTo(X(p),Y(p))}c.stroke()}
+ var N=FL.length-1,part=sel[0]>0||sel[1]<N;
+ if(showMap){c.strokeStyle='#fff';c.lineWidth=6;path(0,N)}
+ c.strokeStyle='#fc4c02';c.lineWidth=3;path(0,N);
+ if(part){c.strokeStyle='#1e88e5';c.lineWidth=5;path(sel[0],sel[1])}
+ function dot(p,col,r){c.fillStyle=col;c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.arc(X(p),Y(p),r,0,7);c.fill();c.stroke()}
+ dot(FL[0],'#2e7d32',6);dot(FL[N],'#c62828',6);
+ if(part){dot(FL[sel[0]],'#1e88e5',5);dot(FL[sel[1]],'#1e88e5',5)}
+ cands.forEach(function(k){var p=k.pa;if(!p._u)return;c.strokeStyle='#e53935';c.lineWidth=3;c.beginPath();c.arc(X(p),Y(p),12,0,7);c.stroke()});
+}
+function drawCh(){
+ var cv=$('ch'),dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;
+ var x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.font='11px sans-serif';x.fillStyle='#8a93a0';
+ var g=function(p){return ser==='ele'?p.ele:ser==='pace'?p._pace:p.hr};
+ var mn=Infinity,mx=-Infinity;FL.forEach(function(p){var v=g(p);if(v!=null){mn=Math.min(mn,v);mx=Math.max(mx,v)}});
+ if(mn===Infinity){x.textAlign='center';x.fillText('Sense dades',W/2,H/2);return}
+ if(mx===mn)mx=mn+1;
+ var D=FL[FL.length-1]._d||1,L=40,T=8,Bm=16,inv=ser==='pace';
+ function X(p){return L+p._d/D*(W-L-6)}
+ function Y(v){var f=(v-mn)/(mx-mn);if(inv)f=1-f;return H-Bm-f*(H-Bm-T)}
+ x.fillStyle='rgba(30,136,229,.2)';x.fillRect(X(FL[sel[0]]),T,Math.max(2,X(FL[sel[1]])-X(FL[sel[0]])),H-Bm-T);
+ x.strokeStyle='#fc4c02';x.lineWidth=1.5;x.beginPath();var pen=false;
+ FL.forEach(function(p){var v=g(p);if(v==null){pen=false;return}(pen&&!p._s)?x.lineTo(X(p),Y(v)):x.moveTo(X(p),Y(v));pen=true});x.stroke();
+ var f=function(v){return ser==='pace'?fmtP(v):Math.round(v)};
+ x.fillStyle='#8a93a0';x.textAlign='left';x.fillText(f(inv?mn:mx),2,T+8);x.fillText(f(inv?mx:mn),2,H-Bm);
+ x.textAlign='right';x.fillText(fmtD(D),W-4,H-3);x.textAlign='left';x.fillText('0',L,H-3);
+}
+
+/* ---- interacció ---- */
+var P={};
+function clampZ(z){return Math.max(1,Math.min(19,z))}
+var cv=$('cv');
+cv.onpointerdown=function(e){cv.setPointerCapture(e.pointerId);P[e.pointerId]=[e.clientX,e.clientY]};
+cv.onpointermove=function(e){
+ var o=P[e.pointerId];if(!o)return;var ids=Object.keys(P),S=256*Math.pow(2,V.z);
+ if(ids.length===1){V.ux-=(e.clientX-o[0])/S;V.uy-=(e.clientY-o[1])/S}
+ else{var q=P[ids[0]==e.pointerId?ids[1]:ids[0]],d0=Math.hypot(o[0]-q[0],o[1]-q[1]),d1=Math.hypot(e.clientX-q[0],e.clientY-q[1]);if(d0>5)V.z=clampZ(V.z+Math.log2(d1/d0))}
+ P[e.pointerId]=[e.clientX,e.clientY];drawMap();
+};
+cv.onpointerup=cv.onpointercancel=function(e){delete P[e.pointerId]};
+cv.onwheel=function(e){e.preventDefault();V.z=clampZ(V.z-Math.sign(e.deltaY)*.5);drawMap()};
+$('zi').onclick=function(){V.z=clampZ(V.z+1);drawMap()};
+$('zo').onclick=function(){V.z=clampZ(V.z-1);drawMap()};
+$('fit').onclick=function(){fit();drawMap()};
+$('bg').onchange=function(){showMap=this.checked;drawMap()};
+function slide(e){
+ var a=+$('r0').value,b=+$('r1').value;
+ if(a>b){if(e.target.id==='r0')b=a;else a=b}
+ $('r0').value=a;$('r1').value=b;sel=[a,b];drawAll();
+}
+$('r0').oninput=$('r1').oninput=slide;
+['ele','pace','hr'].forEach(function(k){$('t-'+k).onclick=function(){ser=k;document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});this.classList.add('on');drawCh()}});
+$('f').onchange=function(e){
+ var files=Array.prototype.slice.call(e.target.files),pending=files.length;if(!pending)return;snap();
+ files.forEach(function(file){
+  file.text().then(function(t){try{frags.push(parseGpx(t,file.name))}catch(err){say('Error: '+err.message)}})
+  .catch(function(){say('No s’ha pogut llegir '+file.name)}).then(function(){if(--pending===0){cands=[];render(true);$('f').value=''}});
+ });
+};
+$('mode').onchange=function(){render(true)};
+window.addEventListener('resize',drawAll);
+
+/* ---- IA: només suggereix ---- */
+function analyze(){
+ cands=[];
+ build().segs.forEach(function(P){
+  var n=P.length;if(n<4)return;var st=[],i;
+  for(i=1;i<n;i++){var d=hav(P[i-1],P[i]),dt=(P[i].t!=null&&P[i-1].t!=null)?(P[i].t-P[i-1].t)/1000:null;st.push({d:d,dt:dt,v:dt>0?d/dt:null})}
+  var vs=st.filter(function(s){return s.v!=null}).map(function(s){return s.v});
+  var md=Math.max(med(st.map(function(s){return s.d})),1),hasT=vs.length>st.length*.8,mv=med(vs);
+  function big(s){return hasT&&s.v!=null?(s.v>8&&s.d>15):s.d>Math.max(40,10*md)}
+  for(i=1;i<n;i++){
+   if(!big(st[i-1]))continue;
+   var j=-1;for(var m=i+1;m<Math.min(n,i+9);m++){if(hav(P[i-1],P[m])<Math.max(30,4*md*(m-i+1))){j=m;break}}
+   var c={pa:P[i],pb:P[i],d:st[i-1].d,dt:st[i-1].dt,v:st[i-1].v,mv:mv};
+   if(j>0){c.kind='spike';c.pb=P[j-1];var path=0;for(var q=i;q<=j;q++)path+=st[q-1].d;c.det=path/Math.max(1,hav(P[i-1],P[j]));c.n=j-i;i=j}
+   else{c.kind='jump';c.n=1}
+   c.verdict=c.kind==='spike'?'remove':'split';cands.push(c);
+  }
+ });
+ cands=cands.slice(0,60);
+}
+async function askAI(){
+ var sp=null;try{sp=window.claude?await window.claude.use('sample'):null}catch(e){}
+ if(!sp){say('IA no disponible: es mostren suggeriments per regles.');return}
+ var info=cands.map(function(c,k){return {id:k,tipus:c.kind==='spike'?'punxa (va i torna)':'salt (no torna)',punts:c.n,salt_m:Math.round(c.d),dt_s:c.dt!=null?Math.round(c.dt):null,vel_ms:c.v!=null?+c.v.toFixed(1):null,detour:c.det?+c.det.toFixed(1):null,vel_tipica_ms:+c.mv.toFixed(1)}});
+ var pr='Ets analista de dades GPS de running. Et passo anomalies candidates d’un track (velocitat o distància impossibles entre punts consecutius; un corredor mai passa de 8 m/s). Per a cadascuna suggereix: "remove" (error de GPS, eliminar els punts), "split" (salt impossible però punts vàlids, p. ex. el GPS va reprendre lluny: tallar la línia) o "keep" (sembla real). Una punxa que torna al punt d’origen gairebé sempre és remove. Respon NOMÉS amb un array JSON [{"id":number,"verdict":"remove"|"split"|"keep","reason":"frase curta en català"}].\nAnomalies: '+JSON.stringify(info);
+ try{var r=await sp.json(pr);(Array.isArray(r)?r:[]).forEach(function(x){var c=cands[x.id];if(c&&SUG[x.verdict]){c.verdict=x.verdict;c.why=x.reason;c.ai=true}})}
+ catch(e){say('La IA no ha respost: es mostren suggeriments per regles.')}
+}
+function where(p){return frags.filter(function(f){return f.pts.indexOf(p)>=0})[0]}
+function apply(c){
+ var f=where(c.pa);if(!f){say('Aquest tram ja ha canviat.');return}
+ snap();
+ if(c.verdict==='split')c.pa.brk=true;
+ else{var a=f.pts.indexOf(c.pa),b=f.pts.indexOf(c.pb);if(b<a)b=a;f.pts.splice(a,b-a+1)}
+ cands.splice(cands.indexOf(c),1);render(false);say('Suggeriment aplicat.');
+}
+function view(c){
+ var i=FL.indexOf(c.pa),j=FL.indexOf(c.pb);if(i<0)return;
+ sel=[Math.max(0,i-5),Math.min(FL.length-1,j+5)];
+ V.ux=c.pa._u[0];V.uy=c.pa._u[1];V.z=Math.max(V.z,16);
+ $('r0').value=sel[0];$('r1').value=sel[1];drawAll();$('cv').scrollIntoView({block:'center'});
+}
+function showC(){
+ var L=$('cl');L.innerHTML='';
+ cands.forEach(function(c){
+  var r=document.createElement('div');r.className='cd';r.style.flexWrap='wrap';
+  var n=document.createElement('div');n.className='n';
+  var b=document.createElement('b');b.textContent=(c.kind==='spike'?'Punxa':'Salt')+' · '+c.n+' pt · '+Math.round(c.d)+' m'+(c.v!=null?' · '+c.v.toFixed(1)+' m/s':'');
+  var m=document.createElement('span');m.className='mu';m.textContent=(c.ai?'Suggeriment de la IA: ':'Suggeriment: ')+SUG[c.verdict]+(c.why?' — '+c.why:'');
+  n.appendChild(b);n.appendChild(document.createElement('br'));n.appendChild(m);r.appendChild(n);
+  function btn(t,fn,cls){var x=document.createElement('button');x.className='sm '+(cls||'');x.textContent=t;x.onclick=fn;r.appendChild(x)}
+  btn('Veure',function(){view(c)});
+  if(c.verdict!=='keep')btn('Aplica',function(){apply(c)},'pri');
+  btn('Ignora',function(){cands.splice(cands.indexOf(c),1);showC();drawMap()});
+  L.appendChild(r);
+ });
+}
+$('det').onclick=async function(){
+ if(!FL.length){say('Carrega algun fitxer primer.');return}
+ analyze();showC();drawMap();
+ if(!cands.length){say('No s’han detectat punxes ni salts.');return}
+ say('Analitzant '+cands.length+' anomalies…');
+ await askAI();showC();drawMap();
+ if(/^Analitzant/.test($('msg').textContent))say(cands.length+' suggeriments. Revisa’ls i aplica els que vulguis.');
+};
+
+/* ---- exportació (conserva pulsacions i altres extensions) ---- */
+function esc(s){return String(s).replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
+function toGpx(){
+ var B=build(),at='';Object.keys(NS).forEach(function(k){at+=' '+k+'="'+esc(NS[k])+'"'});
+ var o='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Editor GPX" xmlns="http://www.topografix.com/GPX/1/1"'+at+'>\n<trk><name>'+esc($('nm').value||'Activitat')+'</name>\n';
+ B.segs.forEach(function(s){o+='<trkseg>\n';s.forEach(function(p){
+  o+='<trkpt lat="'+p.lat.toFixed(7)+'" lon="'+p.lon.toFixed(7)+'">'+(p.ele!=null?'<ele>'+p.ele.toFixed(1)+'</ele>':'')+(p.t!=null?'<time>'+new Date(p.t).toISOString()+'</time>':'')+(p.ext||'')+'</trkpt>\n'});o+='</trkseg>\n'});
+ return o+'</trk>\n</gpx>\n';
+}
+$('exp').onclick=function(){
+ if(!FL.length){say('Carrega algun fitxer primer.');return}
+ var fn=($('nm').value||'activitat').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'_')+'.gpx',file=new File([toGpx()],fn,{type:'application/gpx+xml'});
+ function dl(){var a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=fn;document.body.appendChild(a);a.click();a.remove();say('Desat: '+fn)}
+ if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:fn}).then(function(){say('Compartit: '+fn)},function(e){if(!e||e.name!=='AbortError')dl()});return}
+ dl();
+};
+$('cp').onclick=function(){
+ if(!FL.length){say('Carrega algun fitxer primer.');return}
+ (navigator.clipboard?navigator.clipboard.writeText(toGpx()):Promise.reject()).then(function(){say('GPX copiat al porta-retalls.')},function(){say('No s’ha pogut copiar.')});
+};
+render(true);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+})();
+</script>
+</body>
+</html>
