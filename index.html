@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Editor GPX</title>
+<title>Navalla</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#fc4c02">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Editor GPX">
+<meta name="apple-mobile-web-app-title" content="Navalla">
 
 <style>
 :root{--bg:#f3f5f8;--card:#fff;--tx:#161a20;--mu:#6b7482;--ac:#fc4c02;--bl:#2f80ed;--bd:#e3e7ed;--map:#e9edf2;--sh:0 2px 10px rgba(20,30,50,.07);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -54,12 +54,24 @@ input[type=text]{width:100%;font:inherit;padding:11px;border-radius:12px;border:
 #bar.on{display:flex}
 .card.fs{position:fixed;inset:0;z-index:60;margin:0;border-radius:0;overflow:auto;padding-top:calc(14px + env(safe-area-inset-top,0px))}
 .card.fs #ch{height:calc(100vh - 190px)}
+.how{background:var(--bg);border-radius:12px;padding:9px 12px;font-size:13px;margin-bottom:10px;line-height:1.5}
+.tool{display:flex;width:100%;text-align:left;gap:12px;align-items:center;font-size:15px}
+.tool .ic{font-size:26px}
+.soon{opacity:.55}.badge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--mu)}
+body.home #bar{display:none!important}
 </style>
 </head>
 <body>
 <main>
-<header><h1>🏃 Editor GPX<span>Arregla les teves rutes de running</span></h1><button id="und">↶ Desfés</button></header>
+<header><button id="back" style="display:none">‹</button><h1 id="ttl">🧰 Navalla<span id="sub">El meu kit de supervivència</span></h1><button id="und" style="display:none">↶ Desfés</button></header>
 
+<section id="home">
+  <p class="mu" style="margin:0 0 12px">Eines ràpides per a quan fan falta.</p>
+  <input type="text" id="q" placeholder="🔎 Cerca una eina…" style="margin-bottom:12px">
+  <div id="tools"></div>
+  <p class="mu" id="none" style="display:none">Cap eina coincideix.</p>
+</section>
+<section id="t-gpx" class="toolsec" style="display:none">
 <div class="card">
   <h2><i>1</i>Carrega les activitats</h2>
   <label class="btn pri big" for="f">📂 Tria fitxers GPX</label>
@@ -73,27 +85,17 @@ input[type=text]{width:100%;font:inherit;padding:11px;border-radius:12px;border:
 
 <div class="card">
   <h2><i>2</i>Mapa i selecció</h2>
+  <div class="how"><b>Com funciona:</b> 👆 toca el track per marcar el punt <b>A</b> i després el <b>B</b> (o arrossega sobre el gràfic). Arrossega A i B per afinar. A la barra de sota pots <b>retallar</b>, <b>esborrar</b> el tram o fer-lo una <b>recta</b>. Amb ✏️ mous els punts un a un.</div>
   <div class="mapw"><canvas id="cv"></canvas>
     <div class="ov"><button id="zi">＋</button><button id="zo">－</button><button id="fit">⌖</button><button id="bg" title="Mapa de fons">🗺️</button><button id="ed" title="Edita punts">✏️</button></div>
   </div>
   <div class="hint" id="hint"></div>
+  <div id="seli" style="margin-top:8px"></div>
   <div class="grid" id="stats" style="margin-top:10px"></div>
 </div>
 
-<div class="card" id="chc">
-  <h2><i>3</i>Gràfics <span class="mu" style="margin-left:auto">arrossega per seleccionar</span></h2>
-  <div class="row" style="margin-top:0"><div class="seg" id="tabs"><button class="on" data-s="ele">⛰️ Altitud</button><button data-s="pace">⏱️ Ritme</button><button data-s="hr" id="t-hr">❤️ Pulsacions</button></div></div>
-  <canvas id="ch"></canvas>
-  <div class="row"><button class="sm" id="zsel">🔍 Zoom al tram</button><button class="sm" id="zall">Tot</button><button class="sm" id="full" style="margin-left:auto">⤢ Amplia</button></div>
-</div>
-
 <div class="card">
-  <h2><i>4</i>Tram seleccionat</h2>
-  <div id="seli" class="mu">Marca dos punts al mapa o arrossega sobre el gràfic.</div>
-</div>
-
-<div class="card">
-  <h2><i>5</i>Detector d’errors</h2>
+  <h2><i>3</i>Detector d’errors</h2>
   <p class="mu">Busca errors típics del GPS i te’ls suggereix. No canvia res fins que premis el botó d’acció. Gratuït i sense connexió.</p>
   <details class="mu" style="margin-bottom:8px"><summary>Quins errors busca?</summary><ul style="padding-left:18px;margin:6px 0">
    <li><b>Punxa:</b> un punt surt disparat i torna (velocitat impossible per córrer). Es pot eliminar.</li>
@@ -104,13 +106,21 @@ input[type=text]{width:100%;font:inherit;padding:11px;border-radius:12px;border:
   <div id="cl"></div>
 </div>
 
+<div class="card" id="chc">
+  <h2><i>4</i>Gràfics <span class="mu" style="margin-left:auto">arrossega per seleccionar</span></h2>
+  <div class="row" style="margin-top:0"><div class="seg" id="tabs"><button class="on" data-s="ele">⛰️ Altitud</button><button data-s="pace">⏱️ Ritme</button><button data-s="hr" id="t-hr">❤️ Pulsacions</button></div></div>
+  <canvas id="ch"></canvas>
+  <div class="row"><button class="sm" id="zsel">🔍 Zoom al tram</button><button class="sm" id="zall">Tot</button><button class="sm" id="full" style="margin-left:auto">⤢ Amplia</button></div>
+</div>
+
 <div class="card">
-  <h2><i>6</i>Desa</h2>
+  <h2><i>5</i>Desa</h2>
   <label class="mu">Nom de l’activitat<input type="text" id="nm" value="Activitat"></label>
   <div class="row"><button class="pri" id="exp">⬇️ Desa el GPX</button><button id="cp">Copia el GPX</button></div>
   <div class="mu" id="msg"></div>
   <p class="mu">Es desa com a <i>.gpx</i>. A l’iPhone tria «Desa a Fitxers». Per pujar-lo a Strava, obre strava.com/upload/select des del Safari.</p>
 </div>
+</section>
 </main>
 
 <div id="bar"><button class="pri" id="trim">✂️ Retalla</button><button id="cut">🗑️ Esborra</button><button id="line">📏 Recta</button><button id="clr">✕</button><button id="delv" style="display:none">🗑️ Esborra punt</button><button class="pri" id="exit" style="display:none">✔ Acaba l’edició</button></div>
@@ -230,13 +240,12 @@ function updSel(){
  $('ed').style.background=editMode?'#fb8c00':'';
  if(editMode)h.textContent=editIdx().length?'✏️ Arrossega un punt per moure’l. Arrossega un «+» per afegir-ne un de nou (p. ex. a la cantonada d’una L). Toca un punt per poder esborrar-lo.':'✏️ Selecciona un tram curt (punts A i B) o fes zoom (≥ 16) per veure els punts editables.';
  else h.textContent=!FL.length?'Carrega un GPX per començar.':S.a==null?'👆 Toca el track per marcar el punt A (o arrossega sobre el gràfic).':S.b==null?'👆 Ara toca el punt B.':'Arrossega A o B per afinar, o toca el track per moure l’extrem més proper.';
- if(!r){si.textContent=S.a!=null?'Punt A marcat a '+fmtD(FL[S.a]._d)+'. Marca’n un altre.':'Marca dos punts al mapa o arrossega sobre el gràfic.';drawAll();return}
+ if(!r){si.innerHTML='';drawAll();return}
  var a=FL[r[0]],b=FL[r[1]],dd=b._d-a._d,dt=(a.t!=null&&b.t!=null)?(b.t-a.t)/1000:null,hs=0,hn=0;
  for(var i=r[0];i<=r[1];i++)if(FL[i].hr!=null){hs+=FL[i].hr;hn++}
  si.innerHTML='';
  [['A',fmtD(a._d)],['B',fmtD(b._d)],['Tram',fmtD(dd)],['Temps',dt!=null?fmtT(dt):'—'],['Ritme',dt!=null&&dd>0?fmtP(dt/(dd/1000))+' /km':'—'],['FC',hn?Math.round(hs/hn)+' bpm':'—']].forEach(function(x){var c=document.createElement('span');c.className='chip';c.innerHTML=x[0]+' <b></b>';c.lastChild.textContent=x[1];si.appendChild(c)});
- var p=document.createElement('div');p.className='mu';p.textContent='Fes servir la barra de sota: retallar (queda només el tram), esborrar-lo o fer-lo una línia recta. Amb ✏️ del mapa pots moure punts un a un.';si.appendChild(p);
- drawAll();
+  drawAll();
 }
 function drawAll(){drawMap();drawCh()}
 
@@ -475,7 +484,7 @@ $('det').onclick=function(){
 function esc(s){return String(s).replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
 function toGpx(){
  var B=build(),at='';Object.keys(NS).forEach(function(k){at+=' '+k+'="'+esc(NS[k])+'"'});
- var o='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Editor GPX" xmlns="http://www.topografix.com/GPX/1/1"'+at+'>\n<trk><name>'+esc($('nm').value||'Activitat')+'</name>\n';
+ var o='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Navalla" xmlns="http://www.topografix.com/GPX/1/1"'+at+'>\n<trk><name>'+esc($('nm').value||'Activitat')+'</name>\n';
  B.segs.forEach(function(s){o+='<trkseg>\n';s.forEach(function(p){
   o+='<trkpt lat="'+p.lat.toFixed(7)+'" lon="'+p.lon.toFixed(7)+'">'+(p.ele!=null?'<ele>'+p.ele.toFixed(1)+'</ele>':'')+(p.t!=null?'<time>'+new Date(p.t).toISOString()+'</time>':'')+(p.ext||'')+'</trkpt>\n'});o+='</trkseg>\n'});
  return o+'</trk>\n</gpx>\n';
@@ -492,6 +501,33 @@ $('cp').onclick=function(){
  (navigator.clipboard?navigator.clipboard.writeText(toGpx()):Promise.reject()).then(function(){say('GPX copiat al porta-retalls.')},function(){say('No s’ha pogut copiar.')});
 };
 render(true);
+var TOOLS=[{id:'gpx',ic:'🛠️',n:'Repara una ruta GPS',d:'Uneix fragments, retalla, mou punts i corregeix errors',k:'gpx strava running ruta track rellotge',undo:1}];
+var TAG='El meu kit de supervivència';
+function drawTools(q){
+ var box=$('tools');box.innerHTML='';q=(q||'').toLowerCase();var n=0;
+ TOOLS.forEach(function(t){
+  if(q&&(t.n+' '+t.d+' '+t.k).toLowerCase().indexOf(q)<0)return;n++;
+  var b=document.createElement('button');b.className='tool card';
+  b.innerHTML='<span class="ic"></span><span class="n"><b></b><span class="mu" style="display:block"></span></span><span class="mu">›</span>';
+  b.children[0].textContent=t.ic;b.children[1].children[0].textContent=t.n;b.children[1].children[1].textContent=t.d;
+  b.onclick=function(){go(t.id)};box.appendChild(b);
+ });
+ $('none').style.display=n?'none':'';
+}
+function show(t){
+ var tool=TOOLS.filter(function(x){return x.id===t})[0];
+ $('home').style.display=tool?'none':'';
+ document.querySelectorAll('.toolsec').forEach(function(e){e.style.display=(tool&&e.id==='t-'+tool.id)?'':'none'});
+ document.body.classList.toggle('home',!tool);
+ $('back').style.display=tool?'':'none';$('und').style.display=tool&&tool.undo?'':'none';
+ $('sub').textContent=tool?tool.n:TAG;window.scrollTo(0,0);
+ if(tool&&tool.id==='gpx')setTimeout(function(){drawAll()},30);
+}
+function go(t){location.hash=t;show(t)}
+$('q').oninput=function(){drawTools(this.value)};
+$('back').onclick=function(){go('')};
+window.addEventListener('hashchange',function(){show(location.hash.slice(1))});
+drawTools();show(location.hash.slice(1));
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 })();
 </script>
