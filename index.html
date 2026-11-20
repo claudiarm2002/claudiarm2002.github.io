@@ -502,7 +502,9 @@ $('cp').onclick=function(){
 };
 render(true);
 var TOOLS=[{id:'gpx',ic:'🛠️',n:'Repara una ruta GPS',d:'Uneix fragments, retalla, mou punts i corregeix errors',k:'gpx strava running ruta track rellotge',undo:1},
- {id:'despeses',ic:'💶',n:'Despeses mensuals',d:'Mira on se’n van els diners, mes a mes, des del teu Excel',k:'despeses gastos excel pressupost diners estalvi nomina'}];
+ {id:'despeses',ic:'💶',n:'Despeses mensuals',d:'Mira on se’n van els diners, mes a mes, des del teu Excel',k:'despeses gastos excel pressupost diners estalvi nomina'},
+ {id:'tasques',ic:'🧹',n:'Tasques i recordatoris',d:'Neteja, regar les plantes…: marca-ho i sabràs quant fa que no ho fas',k:'tasques neteja netejar regar plantes casa recordatori feines'},
+ {id:'motxilla',ic:'🎒',n:'Checklist de motxilla',d:'Excursió, refugi, esquí…: llista a mida i pes del que portes',k:'motxilla mochila checklist bivac excursio esqui muntanya pes equip'}];
 var TAG='El meu kit de supervivència';
 function drawTools(q){
  var box=$('tools');box.innerHTML='';q=(q||'').toLowerCase();var n=0;
@@ -533,5 +535,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
 })();
 </script>
 <script src="despeses.js"></script>
+<script src="tasques.js"></script>
+<script src="motxilla.js"></script>
 </body>
 </html>
