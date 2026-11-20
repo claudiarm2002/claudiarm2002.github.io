@@ -501,7 +501,8 @@ $('cp').onclick=function(){
  (navigator.clipboard?navigator.clipboard.writeText(toGpx()):Promise.reject()).then(function(){say('GPX copiat al porta-retalls.')},function(){say('No s’ha pogut copiar.')});
 };
 render(true);
-var TOOLS=[{id:'gpx',ic:'🛠️',n:'Repara una ruta GPS',d:'Uneix fragments, retalla, mou punts i corregeix errors',k:'gpx strava running ruta track rellotge',undo:1}];
+var TOOLS=[{id:'gpx',ic:'🛠️',n:'Repara una ruta GPS',d:'Uneix fragments, retalla, mou punts i corregeix errors',k:'gpx strava running ruta track rellotge',undo:1},
+ {id:'despeses',ic:'💶',n:'Despeses mensuals',d:'Mira on se’n van els diners, mes a mes, des del teu Excel',k:'despeses gastos excel pressupost diners estalvi nomina'}];
 var TAG='El meu kit de supervivència';
 function drawTools(q){
  var box=$('tools');box.innerHTML='';q=(q||'').toLowerCase();var n=0;
@@ -531,5 +532,6 @@ drawTools();show(location.hash.slice(1));
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 })();
 </script>
+<script src="despeses.js"></script>
 </body>
 </html>
