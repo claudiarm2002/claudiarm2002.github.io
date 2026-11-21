@@ -86,6 +86,10 @@ var CSS='\
 #t-ruta label{display:block;font-size:12px;color:var(--mu)}\
 #t-ruta label input,#t-ruta label select{display:block;width:100%;margin-top:4px;font:inherit;font-size:16px;color:var(--tx);padding:11px 12px;border-radius:14px;border:1px solid var(--bd);background:var(--bg)}\
 .rt-in{display:grid;grid-template-columns:1fr 1fr;gap:12px}.rt-in input{font-size:22px!important;font-weight:700;padding:12px!important}\
+.rt-in input,.rt-in select{height:56px;min-width:0;-webkit-appearance:none;appearance:none;text-align:left;line-height:1.2;box-sizing:border-box;margin:4px 0 0}\
+.rt-in select{font-size:18px;font-weight:600;padding:0 12px;background-image:linear-gradient(45deg,transparent 50%,var(--mu) 50%),linear-gradient(135deg,var(--mu) 50%,transparent 50%);background-position:calc(100% - 20px) 24px,calc(100% - 15px) 24px;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}\
+.rt-in input::-webkit-date-and-time-value{text-align:left;min-height:1.2em;margin:0}\
+.rt-in input::-webkit-datetime-edit{padding:0}\
 .rt-hero{background:linear-gradient(150deg,var(--ac),#2f6485);border:0;color:#fff;border-radius:26px;padding:22px 18px;text-align:center}\
 .rt-lab{font-size:13px;opacity:.85;text-transform:uppercase;letter-spacing:.6px}\
 .rt-time{font-size:46px;font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin:4px 0}\
