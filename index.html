@@ -6,7 +6,7 @@
 <title>Navalla</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="theme-color" content="#fc4c02">
+<meta name="theme-color" content="#2f5d3f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -60,6 +60,7 @@ input[type=text]{width:100%;font:inherit;padding:11px;border-radius:12px;border:
 .soon{opacity:.55}.badge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--mu)}
 body.home #bar{display:none!important}
 </style>
+<link rel="stylesheet" href="tema.css">
 </head>
 <body>
 <main>
@@ -504,6 +505,7 @@ render(true);
 var TOOLS=[{id:'gpx',ic:'🛠️',n:'Repara una ruta GPS',d:'Uneix fragments, retalla, mou punts i corregeix errors',k:'gpx strava running ruta track rellotge',undo:1},
  {id:'despeses',ic:'💶',n:'Despeses mensuals',d:'Mira on se’n van els diners, mes a mes, des del teu Excel',k:'despeses gastos excel pressupost diners estalvi nomina'},
  {id:'tasques',ic:'🧹',n:'Tasques i recordatoris',d:'Neteja, regar les plantes…: marca-ho i sabràs quant fa que no ho fas',k:'tasques neteja netejar regar plantes casa recordatori feines'},
+ {id:'ruta',ic:'⏱️',n:'Temps de ruta',d:'Naismith / MIDE amb el teu ritme i hora límit abans de fosc',k:'ruta temps naismith mide excursio hora fosc ritme gpx'},
  {id:'motxilla',ic:'🎒',n:'Checklist de motxilla',d:'Excursió, refugi, esquí…: llista a mida i pes del que portes',k:'motxilla mochila checklist bivac excursio esqui muntanya pes equip'}];
 var TAG='El meu kit de supervivència';
 function drawTools(q){
@@ -537,5 +539,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
 <script src="despeses.js"></script>
 <script src="tasques.js"></script>
 <script src="motxilla.js"></script>
+<script src="ruta.js"></script>
+<script src="tema.js"></script>
 </body>
 </html>

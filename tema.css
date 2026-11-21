@@ -1,0 +1,83 @@
+/* Navalla · tema natura/muntanya (carregar DESPRÉS de l'<style> d'index.html) */
+:root{--bg:#f2f0e8;--card:#fbfaf5;--tx:#1d2a21;--mu:#6b7767;--ac:#3f7d4e;--bd:#e0ddd0;--map:#e8e6dc;--sh:0 4px 18px rgba(40,60,40,.08)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1511;--card:#17211b;--tx:#e8efe5;--mu:#95a595;--ac:#6dbb84;--bd:#26352b;--map:#111a14;--sh:none}}
+body[data-tool=gpx]{--ac:#d2693a}
+body[data-tool=despeses]{--ac:#c39a2e}
+body[data-tool=tasques]{--ac:#3f9484}
+body[data-tool=motxilla]{--ac:#5a9a4a}
+body[data-tool=ruta]{--ac:#4c86a8}
+body .pri{background:var(--ac);border-color:transparent;color:#fff}
+body .card{border-radius:22px}
+body h2 i{background:var(--ac)}
+
+/* ===== INICI ===== */
+body.home{background:
+ url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='240' viewBox='0 0 400 240'%3E%3Cg fill='none' stroke='%233f7d4e' stroke-opacity='.13' stroke-width='1.3'%3E%3Cpath d='M0 40C70 0 130 80 200 40S330 80 400 40'/%3E%3Cpath d='M0 80C70 40 130 120 200 80S330 120 400 80'/%3E%3Cpath d='M0 120C70 80 130 160 200 120S330 160 400 120'/%3E%3Cpath d='M0 160C70 120 130 200 200 160S330 200 400 160'/%3E%3Cpath d='M0 200C70 160 130 240 200 200S330 240 400 200'/%3E%3C/g%3E%3C/svg%3E"),
+ radial-gradient(110% 45% at 0% 0%,rgba(63,125,78,.24),transparent 62%),
+ radial-gradient(80% 40% at 100% 4%,rgba(217,119,74,.18),transparent 60%),var(--bg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.home{background:
+ url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='240' viewBox='0 0 400 240'%3E%3Cg fill='none' stroke='%236dbb84' stroke-opacity='.09' stroke-width='1.3'%3E%3Cpath d='M0 40C70 0 130 80 200 40S330 80 400 40'/%3E%3Cpath d='M0 80C70 40 130 120 200 80S330 120 400 80'/%3E%3Cpath d='M0 120C70 80 130 160 200 120S330 160 400 120'/%3E%3Cpath d='M0 160C70 120 130 200 200 160S330 200 400 160'/%3E%3Cpath d='M0 200C70 160 130 240 200 200S330 240 400 200'/%3E%3C/g%3E%3C/svg%3E"),
+ radial-gradient(110% 45% at 0% 0%,rgba(63,125,78,.30),transparent 62%),
+ radial-gradient(80% 40% at 100% 4%,rgba(217,119,74,.14),transparent 60%),var(--bg)}}
+
+header .lg{display:none;flex:none;line-height:0}
+body.home header{margin:10px 0 18px;gap:14px}
+body.home header .lg{display:block}
+body.home header .lg svg{width:60px;height:60px;filter:drop-shadow(0 8px 12px rgba(31,58,42,.35))}
+body.home header h1{font-size:40px;line-height:1;letter-spacing:-1.6px;font-weight:800}
+body.home header h1 span{font-size:14px;font-weight:500;letter-spacing:0;margin-top:6px}
+body.home #home>p.mu{font-size:16px;color:var(--tx);margin:0 0 14px!important;font-weight:500}
+#q{height:50px;border-radius:25px;background:var(--card);padding:0 20px;font-size:15px;border:1px solid var(--bd);box-shadow:0 6px 18px -8px rgba(40,60,40,.25)}
+#q:focus{outline:2px solid var(--ac);outline-offset:1px}
+
+#tools{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#tools .tool{position:relative;overflow:hidden;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:14px;min-height:172px;margin:0;padding:18px;border:0;border-radius:30px;color:#fff;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 14px 26px -12px var(--sc,rgba(30,50,30,.5));animation:rt-up .5s cubic-bezier(.2,.8,.2,1) both}
+#tools .tool:nth-child(2){animation-delay:.05s}#tools .tool:nth-child(3){animation-delay:.1s}#tools .tool:nth-child(4){animation-delay:.15s}#tools .tool:nth-child(5){animation-delay:.2s}
+@keyframes rt-up{from{opacity:0;transform:translateY(14px) scale(.97)}}
+@media (prefers-reduced-motion:reduce){#tools .tool{animation:none}}
+#tools .tool::before{content:'';position:absolute;inset:0;background:radial-gradient(120% 80% at 100% 0%,rgba(255,255,255,.22),transparent 55%);pointer-events:none}
+#tools .tool::after{content:attr(data-e);position:absolute;right:-12px;bottom:-26px;font-size:118px;line-height:1;opacity:.16;transform:rotate(-12deg);pointer-events:none}
+#tools .tool .ic{position:relative;z-index:1;font-size:26px;width:50px;height:50px;border-radius:17px;background:rgba(255,255,255,.22);backdrop-filter:blur(4px);display:grid;place-items:center;margin-bottom:auto}
+#tools .tool .n{position:relative;z-index:1;flex:none;width:100%;padding-right:38px}
+#tools .tool .n b{font-size:18px;line-height:1.15;display:block;font-weight:800;letter-spacing:-.3px}
+#tools .tool .n .mu{color:rgba(255,255,255,.9);font-size:12.5px;margin-top:5px;line-height:1.3}
+#tools .tool>.mu{position:absolute;top:16px;right:16px;z-index:1;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.24);color:#fff;font-size:20px;display:grid;place-items:center}
+#tools .tool[data-k=gpx]{--sc:rgba(181,83,43,.65);background:linear-gradient(150deg,#e8895a,#b5532b);grid-column:1/-1;min-height:150px}
+#tools .tool[data-k=despeses]{--sc:rgba(167,124,24,.6);background:linear-gradient(150deg,#dcb753,#a77c18)}
+#tools .tool[data-k=tasques]{--sc:rgba(44,119,107,.6);background:linear-gradient(150deg,#58b0a0,#2c776b)}
+#tools .tool[data-k=ruta]{--sc:rgba(47,100,133,.6);background:linear-gradient(150deg,#67a3c6,#2f6485)}
+#tools .tool[data-k=motxilla]{--sc:rgba(58,107,51,.6);background:linear-gradient(150deg,#7cb066,#3a6b33)}
+#tools .tool:only-child{grid-column:1/-1}
+
+/* ===== DINS D'UNA EINA: només el seu títol ===== */
+body:not(.home) header h1{font-size:0}
+body:not(.home) #sub{font-size:24px;font-weight:800;letter-spacing:-.6px;color:var(--ac);margin:0}
+body[data-tool=gpx] #sub::before{content:'🛠️ '}body[data-tool=despeses] #sub::before{content:'💶 '}
+body[data-tool=tasques] #sub::before{content:'🧹 '}body[data-tool=motxilla] #sub::before{content:'🎒 '}body[data-tool=ruta] #sub::before{content:'⏱️ '}
+#back{width:40px;height:40px;padding:0;border-radius:50%;font-size:22px;color:var(--ac);flex:none}
+body:not(.home) main::before{content:'';display:block;height:5px;width:56px;border-radius:5px;background:var(--ac);margin:0 0 12px}
+
+/* ===== motxilla ===== */
+body .mb-acts button{border-radius:22px;padding:9px 14px;background:var(--card)}
+body .mb-acts button.on{background:var(--ac)}
+body .mb-sum{background:linear-gradient(150deg,var(--ac),#2f5d3f);border:0;color:#fff;border-radius:26px;padding:18px}
+body .mb-sum .mu,body .mb-big small{color:rgba(255,255,255,.85)}
+body .mb-big{font-size:38px;font-weight:800}
+body .mb-bar{height:12px;background:rgba(255,255,255,.25)}body .mb-bar i{background:#fff}
+body .mb-cat h3{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);margin-bottom:6px}
+body .mb-row{padding:12px 0}
+body .mb-bx{border-radius:50%;width:28px;height:28px}
+body .mb-row.on .mb-bx{background:var(--ac);border-color:var(--ac)}
+
+/* ===== despeses ===== */
+body .dp-kpi{gap:10px}
+body .dp-kpi .st{background:var(--bg);border-radius:18px;padding:12px 14px;border-left:4px solid var(--ac)}
+body .dp-kpi .st b{font-size:24px;font-weight:800;margin-top:2px}
+body .dp-months button{background:var(--card)}body .dp-months button.on{background:var(--ac)}
+body .dp-bar{height:10px}body .dp-bar i{border-radius:8px}
+body .card h2{font-size:16px;color:var(--ac);font-weight:800}
+
+/* ===== temps de ruta ===== */
+body .rt-big{color:var(--ac)}
+body .rt-sun{border-left:4px solid var(--ac)}
