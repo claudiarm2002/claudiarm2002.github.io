@@ -6,13 +6,8 @@
 var KEY='navalla-tasques-v1',D=null,editing=null,open=null,sec,undoT=null,UNDO=null,flt='tot',ideas=false;
 var PC=['#3f7d4e','#d2693a','#3f9484','#c39a2e','#8a5fa8','#5b7bd0'];
 var IDEES=[
-['🐾 Loa',[['🐾','Netejar el sorral de la Loa',2],['🥫','Comprar menjar de la Loa',30],['🍽️','Rentar el bol de menjar i aigua de la Loa',2],['🪣','Canviar tot el sorral de la Loa',14],['🪮','Raspallar la Loa',7],['🧺','Rentar la manta de la Loa',30],['💊','Desparasitar la Loa',90],['🩺','Revisió al veterinari de la Loa',365]]],
-['🏠 Casa',[['🛁','Netejar el bany',7],['🧹','Aspirar i fregar',7],['🛏️','Canviar els llençols',14],['🧺','Fer la bugada',7],['🍳','Netejar la cuina a fons',14],['🧊','Netejar la nevera',30],['🔥','Netejar el forn',60],['🗑️','Treure les escombraries',3],['♻️','Baixar el reciclatge',7],['🪟','Netejar els vidres',60],['🪞','Netejar els miralls',14],['🧽','Netejar el microones',30],['☕','Descalcificar la cafetera',30],['🌀','Netejar la rentadora',60],['🛋️','Treure la pols dels mobles',14],['🧦','Canviar les tovalloles',7],['👕','Ordenar l’armari',90],['❄️','Descongelar el congelador',180]]],
-['🌱 Plantes',[['🌱','Regar les plantes',7],['🪴','Abonar les plantes',30],['✂️','Podar i netejar les fulles',30],['💦','Ruixar les plantes d’interior',3]]],
-['🛒 Compres',[['🛒','Comprar menjar',7],['📋','Planificar el menú de la setmana',7],['🧴','Comprar productes de neteja',30],['🧻','Comprar paper i bàsics de casa',30],['🍲','Cuinar per congelar',14]]],
-['🚗 Cotxe',[['🛞','Revisar la pressió dels pneumàtics',30],['🚿','Rentar el cotxe',30],['🔧','Revisar nivells i llums del cotxe',90]]],
-['🧾 Papers',[['💶','Revisar rebuts i factures',30],['📊','Actualitzar l’Excel de despeses',30],['💾','Còpia de seguretat del mòbil i fotos',30],['📞','Trucar a la família',14]]],
-['🎒 Muntanya',[['📡','Revisar l’ARVA i les piles',90],['🥾','Netejar i assecar les botes',60],['🩹','Revisar la farmaciola',180],['🎿','Encerar els esquís',60]]]];
+['🐾 Loa',[['🥫','Comprar menjar de la Loa',30],['🪣','Netejar el sorral de la Loa',14]]],
+['🏠 Casa',[['🛁','Netejar el lavabo',14],['🍳','Netejar la cuina',14],['🛋️','Netejar el menjador',14],['🧹','Aspirar i fregar',30],['🧺','Rentadores',4],['🛏️','Canviar els llençols',21],['🗑️','Treure les escombraries',3],['🌱','Regar les plantes',7],['🛒','Comprar menjar',7]]]];
 var $=function(i){return document.getElementById(i)};
 function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
 function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}

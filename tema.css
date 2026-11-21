@@ -77,7 +77,3 @@ body .dp-kpi .st b{font-size:24px;font-weight:800;margin-top:2px}
 body .dp-months button{background:var(--card)}body .dp-months button.on{background:var(--ac)}
 body .dp-bar{height:10px}body .dp-bar i{border-radius:8px}
 body .card h2{font-size:16px;color:var(--ac);font-weight:800}
-
-/* ===== temps de ruta ===== */
-body .rt-big{color:var(--ac)}
-body .rt-sun{border-left:4px solid var(--ac)}
