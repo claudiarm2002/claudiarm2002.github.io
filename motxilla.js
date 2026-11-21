@@ -1,5 +1,5 @@
 /* Navalla · subapp «Checklist de motxilla»
-   Tria el tipus de sortida, genera la llista i ves fitxant: suma el pes del que ja tens a la motxilla.
+   Tria el tipus de sortida i l'estació, genera la llista i ves fitxant: suma el pes del que ja tens a la motxilla.
    Pesos aproximats i editables. Dades només al localStorage d'aquest dispositiu.
    Item: [categoria, nom, grams, flag]  flag: 'p' = ho portes posat (no compta pes), 'r' = recordatori (sense pes) */
 (function(){
@@ -46,6 +46,20 @@ var ACT={
   ['Altres','Crema solar + protector labial',100],['Altres','DNI, targeta i efectiu',50]]},
  custom:{e:'✨',n:'Personalitzable',items:[]}
 };
+/* Estació de l'any: només per a les sortides a peu (l'esquí ja és d'hivern).
+   off = coses que s'amaguen · mod = canvia nom i pes per defecte · add = coses que s'afegeixen */
+var SEAACT={dia:1,lliure:1,guardat:1};
+var SEA={
+ primavera:{e:'🌸',n:'Primavera',add:[['Roba','Pantaló impermeable',300],['Altres','Repel·lent d’insectes',60]]},
+ estiu:{e:'☀️',n:'Estiu',off:['Guants + gorro','Roba tèrmica per dormir'],
+  mod:{'Aigua (1,5 L)':['Aigua (2 L)',2000],'Sac de dormir (confort 0 °C)':['Sac de dormir (confort 5–10 °C)',800]},
+  add:[['Altres','Repel·lent d’insectes',60]]},
+ tardor:{e:'🍂',n:'Tardor',add:[[PRE,'Mirar l’hora de la posta de sol (fa fosc aviat)',0,'r'],['Roba','Pantaló impermeable',300],['Seguretat','Piles de recanvi per al frontal',30]]},
+ hivern:{e:'❄️',n:'Hivern',
+  mod:{'Aigua (1,5 L)':['Aigua (1 L)',1000],'Sac de dormir (confort 0 °C)':['Sac de dormir (confort −5 °C)',1600],'Cartutx de gas':['Cartutx de gas (més, fa fred)',400]},
+  add:[[PRE,'Consultar l’estat de la neu i el perill d’allaus',0,'r'],['Menjar i beure','Termo amb te calent (0,75 L)',900],['Roba','Guants de recanvi',120],['Roba','Capa tèrmica de recanvi',200],['Roba','Pantaló impermeable',300],['Seguretat','Grampons lleugers / micropunxes',400]]}
+};
+function curSea(){var m=new Date().getMonth();return m>=2&&m<=4?'primavera':m>=5&&m<=7?'estiu':m>=8&&m<=10?'tardor':'hivern'}
 var EXTRES=[['Dormir','Tenda lleugera (3 estacions)',1600],['Dormir','Tarp / bivac d’emergència',400],['Menjar i beure','Pastilles potabilitzadores',30],['Menjar i beure','Bidó plegable (2 L)',60],['Material','Càmera',450],['Material','Prismàtics',250],['Material','Llibre o e-reader',250],['Material','Cinta americana + cordino',70],['Material','Paraigua petit',250],['Material','Bateria solar plegable',350],['Roba','Pantaló impermeable',300],['Roba','Calçotets i samarreta de recanvi',150]];
 var CAT=null;
 function catalog(){
@@ -59,14 +73,22 @@ function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,function(c){return
 function kg(g){return (g/1000).toFixed(1).replace('.',',')+' kg'}
 function wt(g){return g>=1000?kg(g):Math.round(g)+' g'}
 function load(){
- S={act:'dia',w:{},tick:{},add:{},off:{},filt:'tot',edit:false,sug:false};
- try{var r=JSON.parse(localStorage.getItem(KEY)||'null');if(r){['act','w','tick','add','off'].forEach(function(k){if(r[k]!=null)S[k]=r[k]});if(!ACT[S.act])S.act='dia'}}catch(_){}
+ S={act:'dia',sea:curSea(),w:{},tick:{},add:{},off:{},filt:'tot',edit:false,sug:false};
+ try{var r=JSON.parse(localStorage.getItem(KEY)||'null');if(r){['act','sea','w','tick','add','off'].forEach(function(k){if(r[k]!=null)S[k]=r[k]});if(!ACT[S.act])S.act='dia';if(!SEA[S.sea])S.sea=curSea()}}catch(_){}
  S.sug=S.act==='custom';
 }
-function save(){try{localStorage.setItem(KEY,JSON.stringify({act:S.act,w:S.w,tick:S.tick,add:S.add,off:S.off}))}catch(_){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({act:S.act,sea:S.sea,w:S.w,tick:S.tick,add:S.add,off:S.off}))}catch(_){}}
 function list(a){
- var off=S.off[a]||[],out=[];
- ACT[a].items.forEach(function(x){var id=a+':'+x[1];if(off.indexOf(id)>=0)return;out.push({id:id,cat:x[0],n:x[1],f:x[3]||'',g:x[3]?0:(S.w[id]!=null?S.w[id]:x[2])})});
+ var off=S.off[a]||[],out=[],se=SEAACT[a]?SEA[S.sea]:null,sOff=(se&&se.off)||[],mod=(se&&se.mod)||{};
+ ACT[a].items.forEach(function(x){
+  var id=a+':'+x[1];if(off.indexOf(id)>=0||sOff.indexOf(x[1])>=0)return;
+  var m=mod[x[1]];
+  out.push({id:id,cat:x[0],n:m?m[0]:x[1],f:x[3]||'',g:x[3]?0:(S.w[id]!=null?S.w[id]:(m?m[1]:x[2]))});
+ });
+ if(se)(se.add||[]).forEach(function(x){
+  var id=a+':'+x[1];if(off.indexOf(id)>=0)return;
+  out.push({id:id,cat:x[0],n:x[1],f:x[3]||'',g:x[3]?0:(S.w[id]!=null?S.w[id]:x[2])});
+ });
  (S.add[a]||[]).forEach(function(x){out.push({id:x.id,cat:x.cat,n:x.n,f:'',g:S.w[x.id]!=null?S.w[x.id]:x.g,c:1})});
  return out;
 }
@@ -75,6 +97,7 @@ function cats(items){var o=[],m={};items.forEach(function(it){if(!m[it.cat]){m[i
 var CSS='\
 .mb-acts{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}.mb-acts::-webkit-scrollbar{display:none}\
 .mb-acts button{flex:none;padding:8px 13px;border-radius:20px;font-size:14px;white-space:nowrap}.mb-acts button.on{background:var(--ac);border-color:transparent;color:#fff;font-weight:600}\
+.mb-sea{margin:0 0 10px}.mb-sea button{font-size:12.5px!important;padding:8px 2px!important;white-space:nowrap}\
 .mb-sum{position:sticky;top:6px;z-index:5}\
 .mb-big{font-size:30px;font-weight:700;letter-spacing:-.5px}.mb-big small{font-size:14px;font-weight:400;color:var(--mu);letter-spacing:0}\
 .mb-bar{height:10px;border-radius:8px;background:var(--bg);overflow:hidden;margin:8px 0 6px}.mb-bar i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#2e9e4f,#5bc27a);transition:width .25s}\
@@ -97,6 +120,7 @@ function parseG(s){s=String(s||'').trim().toLowerCase().replace(',','.');var n=p
 function onClick(e){
  var b=e.target.closest('[data-a]');if(!b)return;var a=b.dataset.a,id=b.dataset.id,act=S.act;
  if(a==='act'){S.act=b.dataset.v;S.edit=false;S.sug=S.act==='custom';save()}
+ else if(a==='sea'){S.sea=b.dataset.v;save()}
  else if(a==='tick'){var T=S.tick[act]||(S.tick[act]={});if(T[id])delete T[id];else T[id]=1;save()}
  else if(a==='w'){var it=list(act).filter(function(x){return x.id===id})[0];if(!it)return;var v=prompt('Pes de «'+it.n+'» (en grams, o en kg si hi poses «kg»):',it.g);if(v==null)return;var g=parseG(v);if(g==null)return;S.w[id]=g;save()}
  else if(a==='rm'){var c=(S.add[act]||[]).filter(function(x){return x.id===id});if(c.length)S.add[act]=S.add[act].filter(function(x){return x.id!==id});else(S.off[act]||(S.off[act]=[])).push(id);if(S.tick[act])delete S.tick[act][id];save()}
@@ -125,6 +149,7 @@ function draw(){
  var a=S.act,items=list(a),T=S.tick[a]||{},tot=0,got=0,n=0,k=0;
  items.forEach(function(it){tot+=it.g;n++;if(T[it.id]){got+=it.g;k++}});
  var h='<div class="mb-acts">'+ORDER.map(function(x){return '<button data-a="act" data-v="'+x+'" class="'+(x===a?'on':'')+'">'+ACT[x].e+' '+ACT[x].n+'</button>'}).join('')+'</div>';
+ if(SEAACT[a])h+='<div class="row mb-sea" style="margin-top:0"><div class="seg">'+Object.keys(SEA).map(function(x){return '<button data-a="sea" data-v="'+x+'" class="'+(x===S.sea?'on':'')+'">'+SEA[x].e+' '+SEA[x].n+'</button>'}).join('')+'</div></div>';
  h+='<div class="card mb-sum"><div class="mb-big">'+kg(got)+' <small>a la motxilla · de '+kg(tot)+'</small></div><div class="mb-bar"><i style="width:'+(tot?got/tot*100:0)+'%"></i></div>'+
   '<div class="mu">'+k+' de '+n+' coses fitxades · falta '+kg(tot-got)+'</div></div>';
  h+='<div class="row" style="margin-top:0"><div class="seg"><button data-a="filt" data-v="tot" class="'+(S.filt==='tot'?'on':'')+'">Tot</button><button data-a="filt" data-v="falta" class="'+(S.filt==='falta'?'on':'')+'">Falta</button></div><button class="sm" data-a="sug" style="'+(S.sug?'background:#fb8c00;color:#fff':'')+'">💡</button><button class="sm" data-a="edit" style="'+(S.edit?'background:#fb8c00;color:#fff':'')+'">✏️ Edita</button></div>';
