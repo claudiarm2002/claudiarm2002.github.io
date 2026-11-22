@@ -1,0 +1,64 @@
+/* Navalla · estil Strava per a «Repara una ruta GPS» i «Temps de ruta»
+   Carregar DESPRÉS de tema.css. No toca les altres eines. */
+
+body[data-tool=gpx],body[data-tool=ruta]{
+ --ac:#fc4c02;--bg:#f7f7fa;--card:#fff;--tx:#242428;--mu:#6d6d78;--bd:#dfdfe8;--map:#ececf1;--sh:none;
+ background:var(--bg);
+ font-family:-apple-system,"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+ :root:not([data-theme="light"]) body[data-tool=gpx],
+ :root:not([data-theme="light"]) body[data-tool=ruta]{--bg:#16161a;--card:#202025;--tx:#f2f2f5;--mu:#9a9aa6;--bd:#303038;--map:#1b1b20}
+}
+:root[data-theme="dark"] body[data-tool=gpx],:root[data-theme="dark"] body[data-tool=ruta]{--bg:#16161a;--card:#202025;--tx:#f2f2f5;--mu:#9a9aa6;--bd:#303038;--map:#1b1b20}
+
+/* Capçalera: títol en negre, barreta taronja */
+body[data-tool=gpx] #sub,body[data-tool=ruta] #sub{color:var(--tx);font-weight:800;letter-spacing:-.5px}
+body[data-tool=gpx] #back,body[data-tool=ruta] #back{color:var(--tx);border-radius:6px}
+body[data-tool=gpx] main::before,body[data-tool=ruta] main::before{width:100%;height:3px;border-radius:0;margin-bottom:14px}
+
+/* Targetes planes i quadrades, com el feed de Strava */
+body[data-tool=gpx] .card,body[data-tool=ruta] .card{border-radius:6px;box-shadow:none;border:1px solid var(--bd)}
+body[data-tool=gpx] .card h2,body[data-tool=ruta] .card h2{color:var(--tx);font-size:17px;font-weight:800;letter-spacing:-.2px}
+body[data-tool=gpx] h2 i{border-radius:4px;background:var(--ac)}
+
+/* Botons */
+body[data-tool=gpx] button,body[data-tool=gpx] .btn,body[data-tool=ruta] button,body[data-tool=ruta] .btn{border-radius:4px;font-weight:600}
+body[data-tool=gpx] .pri,body[data-tool=ruta] .pri{background:var(--ac);color:#fff;border-color:transparent}
+body[data-tool=gpx] .pri:active,body[data-tool=ruta] .pri:active{background:#d93f00}
+body[data-tool=gpx] button.sm,body[data-tool=ruta] button.sm{border-color:var(--ac);color:var(--ac);background:transparent}
+body[data-tool=gpx] button.sm.pri,body[data-tool=ruta] button.sm.pri{background:var(--ac);color:#fff}
+body[data-tool=gpx] #bar button:not(.pri){border-color:var(--bd);color:var(--tx)}
+
+/* Pestanyes amb subratllat taronja (en lloc de píndola) */
+body[data-tool=gpx] .seg,body[data-tool=ruta] .seg{background:transparent;border-bottom:1px solid var(--bd);border-radius:0;padding:0;gap:0}
+body[data-tool=gpx] .seg button,body[data-tool=ruta] .seg button{border-radius:0;color:var(--mu);padding:10px 4px;border-bottom:3px solid transparent;margin-bottom:-1px}
+body[data-tool=gpx] .seg button.on,body[data-tool=ruta] .seg button.on{background:transparent;box-shadow:none;color:var(--ac);border-bottom-color:var(--ac);font-weight:800}
+
+/* Estadístiques: número gran a dalt, etiqueta petita i grisa a sota */
+body[data-tool=gpx] .st,body[data-tool=ruta] .st{display:flex;flex-direction:column-reverse;background:transparent;border-radius:0;padding:6px 0 8px;border-bottom:1px solid var(--bd)}
+body[data-tool=gpx] .st b,body[data-tool=ruta] .st b{font-size:26px;font-weight:700;letter-spacing:-.8px;font-variant-numeric:tabular-nums;line-height:1.1}
+body[data-tool=gpx] .st span,body[data-tool=ruta] .st span{font-size:12px;color:var(--mu);margin-top:2px}
+body[data-tool=gpx] .grid{gap:4px 14px}
+
+/* Xips de selecció A/B */
+body[data-tool=gpx] .chip{border-radius:4px;background:var(--bg);border:1px solid var(--bd)}
+body[data-tool=gpx] .chip b{color:var(--ac)}
+
+/* Mapa i gràfic */
+body[data-tool=gpx] canvas{border-radius:4px}
+body[data-tool=gpx] .ov button{border-radius:6px;background:var(--card)}
+body[data-tool=gpx] .hint,body[data-tool=gpx] .how{border-radius:4px;background:var(--bg);border-left:3px solid var(--ac)}
+
+/* Inputs */
+body[data-tool=gpx] input[type=text],body[data-tool=gpx] select,
+body[data-tool=ruta] #t-ruta label input,body[data-tool=ruta] #t-ruta label select{border-radius:4px;background:var(--card)}
+body[data-tool=gpx] input[type=text]:focus,body[data-tool=ruta] input:focus,body[data-tool=ruta] select:focus{outline:2px solid var(--ac);outline-offset:0}
+
+/* Temps de ruta: el resultat com a número d'activitat */
+body[data-tool=ruta] .rt-big{color:var(--tx);font-size:48px;font-weight:800;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+body[data-tool=ruta] .rt-big small{font-size:14px;letter-spacing:0}
+body[data-tool=ruta] .rt-sun{border-radius:4px;border-left:3px solid var(--ac);background:var(--bg)}
+body[data-tool=ruta] .rt-grid{gap:4px 14px}
+body[data-tool=ruta] .rt-fk b{color:var(--ac)}
+body[data-tool=ruta] .rt-r input{accent-color:var(--ac)}
